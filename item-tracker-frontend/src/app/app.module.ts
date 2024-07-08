@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
+import { AuthInterceptor } from './auth.interceptor';
 import { ItemsComponent } from './items/items.component';
 // import { JwtModule } from '@auth0/angular-jwt';
 import { JwtModule } from '@auth0/angular-jwt';
@@ -32,7 +33,9 @@ export function tokenGetter() {
         }
       })    
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

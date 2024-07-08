@@ -19,14 +19,15 @@ import { Observable } from 'rxjs';
 })
 export class ApiService {
   private apiUrl = 'http://localhost:8000/api/';  // Replace with your Django API URL
-  private token = 'your_auth_token_here';  // Replace with actual token management
+  // private token = 'your_auth_token_here';  // Replace with actual token management
 
   constructor(private http: HttpClient) { }
 
   private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('access_token');
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Token ${this.token}`
+      'Authorization': `Bearer ${token}`
     });
   }
 
