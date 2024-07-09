@@ -4,30 +4,45 @@ import { Component } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, MatInputModule, MatButtonModule, MatCardModule],
   template: `
-    <div>
-      <h2>Login</h2>
-      <form (ngSubmit)="onSubmit()">
-        <div>
-          <label for="username">Username:</label>
-          <input type="text" id="username" [(ngModel)]="username" name="username" required>
-        </div>
-        <div>
-          <label for="password">Password:</label>
-          <input type="password" id="password" [(ngModel)]="password" name="password" required>
-        </div>
-        <button type="submit">Login</button>
-      </form>
-      <p *ngIf="error">{{ error }}</p>
-    </div>
+    <mat-card class="login-card">
+      <mat-card-header>
+        <mat-card-title>Login</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form (ngSubmit)="onSubmit()">
+          <mat-form-field appearance="fill">
+            <mat-label>Username</mat-label>
+            <input matInput [(ngModel)]="username" name="username" required>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" [(ngModel)]="password" name="password" required>
+          </mat-form-field>
+          <button mat-raised-button color="primary" type="submit">Login</button>
+        </form>
+      </mat-card-content>
+    </mat-card>
   `,
-  styles: []
+  styles: [`
+    .login-card {
+      max-width: 400px;
+      margin: 2em auto;
+      text-align: center;
+    }
+    mat-form-field {
+      display: block;
+      margin-bottom: 1em;
+    }
+  `]
 })
 export class LoginComponent {
   username = '';
