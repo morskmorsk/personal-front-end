@@ -9,7 +9,7 @@ import { catchError, tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'http://localhost:8000/api/';  // Make sure this matches your Django API URL
+  private apiUrl = 'http://192.168.1.9:8000/api/'; //'http://localhost:8000/api/';  // Make sure this matches your Django API URL
 
   constructor(private http: HttpClient) { }
 
