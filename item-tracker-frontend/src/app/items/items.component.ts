@@ -1,3 +1,5 @@
+// src/app/items/items.component.ts
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -5,10 +7,10 @@ import { ApiService } from '../api.service';
 
 @Component({
   selector: 'app-items',
-  templateUrl: './items.component.html',
-  styleUrls: ['./items.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule],
+  templateUrl: './items.component.html',
+  styleUrls: ['./items.component.css']
 })
 export class ItemsComponent implements OnInit {
   items: any[] = [];
@@ -16,18 +18,23 @@ export class ItemsComponent implements OnInit {
   locations: any[] = [];
   newItem: any = {};
 
-  constructor(private apiService: ApiService) { }
+  constructor(private apiService: ApiService) {
+    console.log('ItemsComponent constructor called');
+  }
 
   ngOnInit(): void {
+    console.log('ItemsComponent ngOnInit called');
     this.loadItems();
     this.loadCategories();
     this.loadLocations();
   }
 
   loadItems(): void {
+    console.log('Loading items...');
     this.apiService.getItems().subscribe(
       (data) => {
-        this.items = data.results;
+        console.log('Items loaded:', data);
+        this.items = data.results || data;
       },
       (error) => {
         console.error('Error loading items:', error);

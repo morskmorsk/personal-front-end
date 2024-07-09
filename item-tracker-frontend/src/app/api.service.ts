@@ -1,25 +1,15 @@
-// import { Injectable } from '@angular/core';
-
-// @Injectable({
-//   providedIn: 'root'
-// })
-// export class ApiService {
-
-//   constructor() { }
-// }
-
 // src/app/api.service.ts
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'http://localhost:8000/api/';  // Replace with your Django API URL
-  // private token = 'your_auth_token_here';  // Replace with actual token management
+  private apiUrl = 'http://localhost:8000/api/';  // Make sure this matches your Django API URL
 
   constructor(private http: HttpClient) { }
 
@@ -32,7 +22,15 @@ export class ApiService {
   }
 
   getItems(): Observable<any> {
-    return this.http.get(`${this.apiUrl}items/`, { headers: this.getHeaders() });
+    console.log('ApiService: Fetching items');
+    return this.http.get(`${this.apiUrl}items/`, { headers: this.getHeaders() })
+      .pipe(
+        tap(response => console.log('ApiService: Items fetched', response)),
+        catchError(error => {
+          console.error('ApiService: Error fetching items', error);
+          throw error;
+        })
+      );
   }
 
   createItem(item: any): Observable<any> {
