@@ -1,25 +1,14 @@
-// import { Component } from '@angular/core';
-
-// @Component({
-//   selector: 'app-items',
-//   standalone: true,
-//   imports: [],
-//   templateUrl: './items.component.html',
-//   styleUrl: './items.component.css'
-// })
-// export class ItemsComponent {
-
-// }
-
-// src/app/items/items.component.ts
-
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../api.service';
 
 @Component({
   selector: 'app-items',
   templateUrl: './items.component.html',
-  styleUrls: ['./items.component.css']
+  styleUrls: ['./items.component.css'],
+  standalone: true,
+  imports: [CommonModule, FormsModule]
 })
 export class ItemsComponent implements OnInit {
   items: any[] = [];
