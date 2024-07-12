@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -35,6 +35,7 @@ import { LocationEditDialogComponent } from '../locations/location-edit-dialog.c
     MatSnackBarModule,
     MatDialogModule
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <mat-tab-group>
       <mat-tab label="Item List">
@@ -43,7 +44,7 @@ import { LocationEditDialogComponent } from '../locations/location-edit-dialog.c
             <mat-card-header>
               <mat-card-title>{{ item.name || 'Unnamed Item' }}</mat-card-title>
             </mat-card-header>
-            <img mat-card-image [src]="item.image" alt="{{ item.name }}" *ngIf="item.image">
+            <img mat-card-image [src]="item.image" alt="{{ item.name }}" *ngIf="item.image" class="item-image">
             <mat-card-content>
               <p *ngIf="item.description">{{ item.description }}</p>
               <mat-divider></mat-divider>
@@ -146,12 +147,20 @@ import { LocationEditDialogComponent } from '../locations/location-edit-dialog.c
     .file-input button {
       margin-right: 1rem;
     }
+    .item-image {
+      width: 100%;
+      height: auto;
+    }
     @media (max-width: 600px) {
       .item-list {
         grid-template-columns: 1fr;
       }
       .item-card {
         width: 100%;
+      }
+      .item-image {
+        max-height: 200px;
+        object-fit: cover;
       }
     }
   `]
