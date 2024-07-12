@@ -1,5 +1,3 @@
-// src/app/items/items.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +11,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { ApiService } from '../api.service';
 
 @Component({
@@ -30,7 +29,8 @@ import { ApiService } from '../api.service';
     MatTabsModule,
     MatDividerModule,
     MatChipsModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDialogModule
   ],
   template: `
     <mat-tab-group>
@@ -56,56 +56,15 @@ import { ApiService } from '../api.service';
               <p *ngIf="item.date_added"><strong>Added:</strong> {{ item.date_added | date }}</p>
               <p><strong>Available:</strong> {{ item.is_available ? 'Yes' : 'No' }}</p>
             </mat-card-content>
+            <mat-card-actions>
+              <button mat-button color="primary" (click)="editItem(item)">EDIT</button>
+              <button mat-button color="warn" (click)="deleteItem(item)">DELETE</button>
+            </mat-card-actions>
           </mat-card>
         </div>
       </mat-tab>
       <mat-tab label="Add New Item">
-        <form (ngSubmit)="createItem()" class="new-item-form">
-          <mat-form-field appearance="fill">
-            <mat-label>Name</mat-label>
-            <input matInput [(ngModel)]="newItem.name" name="name" required>
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Description</mat-label>
-            <textarea matInput [(ngModel)]="newItem.description" name="description"></textarea>
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Quantity</mat-label>
-            <input matInput type="number" [(ngModel)]="newItem.quantity" name="quantity" required>
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Price</mat-label>
-            <input matInput type="number" [(ngModel)]="newItem.price" name="price" step="0.01" required>
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Category</mat-label>
-            <mat-select [(ngModel)]="newItem.category" name="category" required>
-              <mat-option *ngFor="let category of categories" [value]="category.id">
-                {{ category.name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Location</mat-label>
-            <mat-select [(ngModel)]="newItem.location" name="location" required>
-              <mat-option *ngFor="let location of locations" [value]="location.id">
-                {{ location.name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Barcode</mat-label>
-            <input matInput [(ngModel)]="newItem.barcode" name="barcode">
-          </mat-form-field>
-          <div class="file-input">
-            <button mat-raised-button (click)="fileInput.click()" type="button">
-              <mat-icon>cloud_upload</mat-icon> Choose Image
-            </button>
-            <input hidden (change)="onFileSelected($event)" #fileInput type="file" accept="image/*">
-            <span *ngIf="selectedFile">{{ selectedFile.name }}</span>
-          </div>
-          <button mat-raised-button color="primary" type="submit">Create Item</button>
-        </form>
+        <!-- Existing form for adding new items -->
       </mat-tab>
     </mat-tab-group>
   `,
@@ -146,7 +105,7 @@ export class ItemsComponent implements OnInit {
   newItem: any = {};
   selectedFile: File | null = null;
 
-  constructor(private apiService: ApiService, private snackBar: MatSnackBar) {}
+  constructor(private apiService: ApiService, private snackBar: MatSnackBar, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.loadItems();
@@ -221,6 +180,51 @@ export class ItemsComponent implements OnInit {
       }
     );
   }
+//////////////////////////////////////////////////////////
+editItem(item: any): void {
+  // Open a dialog for editing the item
+  const dialogRef = this.dialog.open(ItemEditDialogComponent, {
+    width: '400px',
+    data: { ...item }
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.apiService.updateItem(item.id, result).subscribe(
+        updatedItem => {
+          const index = this.items.findIndex(i => i.id === updatedItem.id);
+          if (index !== -1) {
+            this.items[index] = updatedItem;
+          }
+          this.showSnackBar('Item updated successfully');
+        },
+        error => {
+          console.error('Error updating item:', error);
+          this.showSnackBar('Error updating item');
+        }
+      );
+    }
+  });
+}
+
+deleteItem(item: any): void {
+  if (confirm(`Are you sure you want to delete ${item.name}?`)) {
+    this.apiService.deleteItem(item.id).subscribe(
+      () => {
+        this.items = this.items.filter(i => i.id !== item.id);
+        this.showSnackBar('Item deleted successfully');
+      },
+      error => {
+        console.error('Error deleting item:', error);
+        this.showSnackBar('Error deleting item');
+      }
+    );
+  }
+}
+
+//////////////////////////////////////////////////////////
+
+
 
   showSnackBar(message: string): void {
     this.snackBar.open(message, 'Close', {
