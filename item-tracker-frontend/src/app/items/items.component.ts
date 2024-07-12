@@ -1,3 +1,5 @@
+// src/app/items/items.component.ts
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +15,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { ApiService } from '../api.service';
-import { ItemEditDialogComponent } from '../item-edit-dialog.component';
+import { ItemEditDialogComponent } from './item-edit-dialog.component';
+import { CategoryEditDialogComponent } from '../categories/category-edit-dialog.component';
+import { LocationEditDialogComponent } from '../locations/location-edit-dialog.component';
 
 @Component({
   selector: 'app-items',
@@ -42,8 +46,12 @@ import { ItemEditDialogComponent } from '../item-edit-dialog.component';
               <mat-card-title>{{ item.name || 'Unnamed Item' }}</mat-card-title>
               <mat-card-subtitle>
                 <mat-chip-set>
-                  <mat-chip *ngIf="item.category">{{ item.category.name || item.category }}</mat-chip>
-                  <mat-chip *ngIf="item.location">{{ item.location.name || item.location }}</mat-chip>
+                  <mat-chip (click)="editCategory(item.category)" *ngIf="item.category">
+                    Category: {{ getCategoryName(item.category) }}
+                  </mat-chip>
+                  <mat-chip (click)="editLocation(item.location)" *ngIf="item.location">
+                    Location: {{ getLocationName(item.location) }}
+                  </mat-chip>
                 </mat-chip-set>
               </mat-card-subtitle>
             </mat-card-header>
@@ -65,7 +73,52 @@ import { ItemEditDialogComponent } from '../item-edit-dialog.component';
         </div>
       </mat-tab>
       <mat-tab label="Add New Item">
-        <!-- Existing form for adding new items -->
+        <form (ngSubmit)="createItem()" class="new-item-form">
+          <mat-form-field appearance="fill">
+            <mat-label>Name</mat-label>
+            <input matInput [(ngModel)]="newItem.name" name="name" required>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Description</mat-label>
+            <textarea matInput [(ngModel)]="newItem.description" name="description"></textarea>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Quantity</mat-label>
+            <input matInput type="number" [(ngModel)]="newItem.quantity" name="quantity" required>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Price</mat-label>
+            <input matInput type="number" [(ngModel)]="newItem.price" name="price" step="0.01" required>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Category</mat-label>
+            <mat-select [(ngModel)]="newItem.category" name="category" required>
+              <mat-option *ngFor="let category of categories" [value]="category.id">
+                {{ category.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Location</mat-label>
+            <mat-select [(ngModel)]="newItem.location" name="location" required>
+              <mat-option *ngFor="let location of locations" [value]="location.id">
+                {{ location.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Barcode</mat-label>
+            <input matInput [(ngModel)]="newItem.barcode" name="barcode">
+          </mat-form-field>
+          <div class="file-input">
+            <button mat-raised-button (click)="fileInput.click()" type="button">
+              <mat-icon>cloud_upload</mat-icon> Choose Image
+            </button>
+            <input hidden (change)="onFileSelected($event)" #fileInput type="file" accept="image/*">
+            <span *ngIf="selectedFile">{{ selectedFile.name }}</span>
+          </div>
+          <button mat-raised-button color="primary" type="submit">Create Item</button>
+        </form>
       </mat-tab>
     </mat-tab-group>
   `,
@@ -106,7 +159,11 @@ export class ItemsComponent implements OnInit {
   newItem: any = {};
   selectedFile: File | null = null;
 
-  constructor(private apiService: ApiService, private snackBar: MatSnackBar, private dialog: MatDialog) {}
+  constructor(
+    private apiService: ApiService,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.loadItems();
@@ -181,83 +238,154 @@ export class ItemsComponent implements OnInit {
       }
     );
   }
-//////////////////////////////////////////////////////////
-// editItem(item: any): void {
-//   // Open a dialog for editing the item
-//   const dialogRef = this.dialog.open(ItemEditDialogComponent, {
-//     width: '400px',
-//     data: { ...item }
-//   });
 
-//   dialogRef.afterClosed().subscribe(result => {
-//     if (result) {
-//       this.apiService.updateItem(item.id, result).subscribe(
-//         updatedItem => {
-//           const index = this.items.findIndex(i => i.id === updatedItem.id);
-//           if (index !== -1) {
-//             this.items[index] = updatedItem;
-//           }
-//           this.showSnackBar('Item updated successfully');
-//         },
-//         error => {
-//           console.error('Error updating item:', error);
-//           this.showSnackBar('Error updating item');
-//         }
-//       );
-//     }
-//   });
-// }
-editItem(item: any): void {
-  const dialogRef = this.dialog.open(ItemEditDialogComponent, {
-    width: '400px',
-    data: { ...item }
-  });
+  // editItem(item: any): void {
+  //   const dialogRef = this.dialog.open(ItemEditDialogComponent, {
+  //     width: '400px',
+  //     data: { ...item }
+  //   });
 
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      const updatedItem = { ...result };
-      const updatedImage = result.image instanceof File ? result.image : null;
-      delete updatedItem.image;  // Remove image from the main object
+  //   dialogRef.afterClosed().subscribe(result => {
+  //     if (result) {
+  //       const updatedItem = { ...result };
+  //       const updatedImage = result.image instanceof File ? result.image : null;
+  //       delete updatedItem.image;
 
-      this.apiService.updateItem(item.id, updatedItem, updatedImage).subscribe(
-        updatedItem => {
-          const index = this.items.findIndex(i => i.id === updatedItem.id);
-          if (index !== -1) {
-            this.items[index] = updatedItem;
+  //       this.apiService.updateItem(item.id, updatedItem, updatedImage).subscribe(
+  //         updatedItem => {
+  //           const index = this.items.findIndex(i => i.id === updatedItem.id);
+  //           if (index !== -1) {
+  //             this.items[index] = updatedItem;
+  //           }
+  //           this.showSnackBar('Item updated successfully');
+  //         },
+  //         error => {
+  //           console.error('Error updating item:', error);
+  //           this.showSnackBar('Error updating item');
+  //         }
+  //       );
+  //     }
+  //   });
+  // }
+  editItem(item: any): void {
+    const dialogRef = this.dialog.open(ItemEditDialogComponent, {
+      width: '400px',
+      data: { ...item }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const updatedItem = { ...result };
+        const updatedImage = result.image instanceof File ? result.image : null;
+        if (updatedImage) {
+          delete updatedItem.image;
+        }
+
+        this.apiService.updateItem(item.id, updatedItem, updatedImage).subscribe(
+          updatedItem => {
+            const index = this.items.findIndex(i => i.id === updatedItem.id);
+            if (index !== -1) {
+              this.items[index] = updatedItem;
+            }
+            this.showSnackBar('Item updated successfully');
+          },
+          error => {
+            console.error('Error updating item:', error);
+            this.showSnackBar('Error updating item');
           }
-          this.showSnackBar('Item updated successfully');
+        );
+      }
+    });
+  }
+
+  deleteItem(item: any): void {
+    if (confirm(`Are you sure you want to delete ${item.name}?`)) {
+      this.apiService.deleteItem(item.id).subscribe(
+        () => {
+          this.items = this.items.filter(i => i.id !== item.id);
+          this.showSnackBar('Item deleted successfully');
         },
         error => {
-          console.error('Error updating item:', error);
-          this.showSnackBar('Error updating item');
+          console.error('Error deleting item:', error);
+          this.showSnackBar('Error deleting item');
         }
       );
     }
-  });
-}
-
-deleteItem(item: any): void {
-  if (confirm(`Are you sure you want to delete ${item.name}?`)) {
-    this.apiService.deleteItem(item.id).subscribe(
-      () => {
-        this.items = this.items.filter(i => i.id !== item.id);
-        this.showSnackBar('Item deleted successfully');
-      },
-      error => {
-        console.error('Error deleting item:', error);
-        this.showSnackBar('Error deleting item');
-      }
-    );
   }
-}
 
-//////////////////////////////////////////////////////////
+  getCategoryName(categoryId: number): string {
+    const category = this.categories.find(c => c.id === categoryId);
+    return category ? category.name : 'Unknown Category';
+  }
 
+  getLocationName(locationId: number): string {
+    const location = this.locations.find(l => l.id === locationId);
+    return location ? location.name : 'Unknown Location';
+  }
 
+  editCategory(categoryId: number): void {
+    const category = this.categories.find(c => c.id === categoryId);
+    if (category) {
+      const dialogRef = this.dialog.open(CategoryEditDialogComponent, {
+        width: '400px',
+        data: { ...category }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.apiService.updateCategory(categoryId, result).subscribe(
+            updatedCategory => {
+              const index = this.categories.findIndex(c => c.id === updatedCategory.id);
+              if (index !== -1) {
+                this.categories[index] = updatedCategory;
+              }
+              this.showSnackBar('Category updated successfully');
+              this.loadItems(); // Reload items to reflect the updated category
+            },
+            error => {
+              console.error('Error updating category:', error);
+              this.showSnackBar('Error updating category');
+            }
+          );
+        }
+      });
+    }
+  }
+
+  editLocation(locationId: number): void {
+    const location = this.locations.find(l => l.id === locationId);
+    if (location) {
+      const dialogRef = this.dialog.open(LocationEditDialogComponent, {
+        width: '400px',
+        data: { ...location }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.apiService.updateLocation(locationId, result).subscribe(
+            updatedLocation => {
+              const index = this.locations.findIndex(l => l.id === updatedLocation.id);
+              if (index !== -1) {
+                this.locations[index] = updatedLocation;
+              }
+              this.showSnackBar('Location updated successfully');
+              this.loadItems(); // Reload items to reflect the updated location
+            },
+            error => {
+              console.error('Error updating location:', error);
+              this.showSnackBar('Error updating location');
+            }
+          );
+        }
+      });
+    }
+  }
 
   showSnackBar(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
     });
   }
 }
