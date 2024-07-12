@@ -27,8 +27,20 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}items/`, item, { headers: this.getHeaders() });
   }
 
-  updateItem(id: number, item: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}items/${id}/`, item, { headers: this.getHeaders() });
+  // updateItem(id: number, item: any): Observable<any> {
+  //   return this.http.put(`${this.apiUrl}items/${id}/`, item, { headers: this.getHeaders() });
+  // }
+  updateItem(id: number, item: any, image: File | null): Observable<any> {
+    const formData = new FormData();
+    for (const key in item) {
+      if (key !== 'image') {
+        formData.append(key, item[key]);
+      }
+    }
+    if (image) {
+      formData.append('image', image, image.name);
+    }
+    return this.http.put(`${this.apiUrl}items/${id}/`, formData, { headers: this.getHeaders() });
   }
 
   deleteItem(id: number): Observable<any> {

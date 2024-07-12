@@ -182,8 +182,32 @@ export class ItemsComponent implements OnInit {
     );
   }
 //////////////////////////////////////////////////////////
+// editItem(item: any): void {
+//   // Open a dialog for editing the item
+//   const dialogRef = this.dialog.open(ItemEditDialogComponent, {
+//     width: '400px',
+//     data: { ...item }
+//   });
+
+//   dialogRef.afterClosed().subscribe(result => {
+//     if (result) {
+//       this.apiService.updateItem(item.id, result).subscribe(
+//         updatedItem => {
+//           const index = this.items.findIndex(i => i.id === updatedItem.id);
+//           if (index !== -1) {
+//             this.items[index] = updatedItem;
+//           }
+//           this.showSnackBar('Item updated successfully');
+//         },
+//         error => {
+//           console.error('Error updating item:', error);
+//           this.showSnackBar('Error updating item');
+//         }
+//       );
+//     }
+//   });
+// }
 editItem(item: any): void {
-  // Open a dialog for editing the item
   const dialogRef = this.dialog.open(ItemEditDialogComponent, {
     width: '400px',
     data: { ...item }
@@ -191,7 +215,11 @@ editItem(item: any): void {
 
   dialogRef.afterClosed().subscribe(result => {
     if (result) {
-      this.apiService.updateItem(item.id, result).subscribe(
+      const updatedItem = { ...result };
+      const updatedImage = result.image instanceof File ? result.image : null;
+      delete updatedItem.image;  // Remove image from the main object
+
+      this.apiService.updateItem(item.id, updatedItem, updatedImage).subscribe(
         updatedItem => {
           const index = this.items.findIndex(i => i.id === updatedItem.id);
           if (index !== -1) {

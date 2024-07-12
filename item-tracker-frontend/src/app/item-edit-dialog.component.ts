@@ -39,6 +39,7 @@ import { MatButtonModule } from '@angular/material/button';
           <mat-label>Price</mat-label>
           <input matInput type="number" [(ngModel)]="data.price" name="price" step="0.01" required>
         </mat-form-field>
+        <input type="file" (change)="onFileSelected($event)" accept="image/*">
         <!-- Add more fields as needed -->
       </form>
     </mat-dialog-content>
@@ -56,5 +57,12 @@ export class ItemEditDialogComponent {
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  onFileSelected(event: any): void {
+    if (event.target.files.length > 0) {
+      const file = event.target.files[0];
+      this.data.image = file;
+    }
   }
 }
