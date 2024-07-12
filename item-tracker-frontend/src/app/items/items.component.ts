@@ -13,6 +13,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { ApiService } from '../api.service';
+import { ItemEditDialogComponent } from '../item-edit-dialog.component';
 
 @Component({
   selector: 'app-items',

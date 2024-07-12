@@ -1,4 +1,3 @@
-// private apiUrl = 'http://192.168.1.9:8000/api/'; //'http://localhost:8000/api/';  // Make sure this matches your Django API URL
 // src/app/api.service.ts
 
 import { Injectable } from '@angular/core';
@@ -28,6 +27,14 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}items/`, item, { headers: this.getHeaders() });
   }
 
+  updateItem(id: number, item: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}items/${id}/`, item, { headers: this.getHeaders() });
+  }
+
+  deleteItem(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}items/${id}/`, { headers: this.getHeaders() });
+  }
+
   getCategories(): Observable<any> {
     return this.http.get(`${this.apiUrl}categories/`, { headers: this.getHeaders() });
   }
@@ -35,4 +42,6 @@ export class ApiService {
   getLocations(): Observable<any> {
     return this.http.get(`${this.apiUrl}locations/`, { headers: this.getHeaders() });
   }
+
+  // Add similar methods for categories and locations...
 }
