@@ -1,5 +1,3 @@
-// src/app/items/items.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -44,16 +42,6 @@ import { LocationEditDialogComponent } from '../locations/location-edit-dialog.c
           <mat-card *ngFor="let item of items" class="item-card">
             <mat-card-header>
               <mat-card-title>{{ item.name || 'Unnamed Item' }}</mat-card-title>
-              <mat-card-subtitle>
-                <mat-chip-set>
-                  <mat-chip (click)="editCategory(item.category)" *ngIf="item.category">
-                    Category: {{ getCategoryName(item.category) }}
-                  </mat-chip>
-                  <mat-chip (click)="editLocation(item.location)" *ngIf="item.location">
-                    Location: {{ getLocationName(item.location) }}
-                  </mat-chip>
-                </mat-chip-set>
-              </mat-card-subtitle>
             </mat-card-header>
             <img mat-card-image [src]="item.image" alt="{{ item.name }}" *ngIf="item.image">
             <mat-card-content>
@@ -64,6 +52,14 @@ import { LocationEditDialogComponent } from '../locations/location-edit-dialog.c
               <p *ngIf="item.barcode"><strong>Barcode:</strong> {{ item.barcode }}</p>
               <p *ngIf="item.date_added"><strong>Added:</strong> {{ item.date_added | date }}</p>
               <p><strong>Available:</strong> {{ item.is_available ? 'Yes' : 'No' }}</p>
+              <mat-chip-list>
+                <mat-chip *ngIf="item.category">
+                  Category: {{ getCategoryName(item.category) }}
+                </mat-chip>
+                <mat-chip *ngIf="item.location">
+                  Location: {{ getLocationName(item.location) }}
+                </mat-chip>
+              </mat-chip-list>
             </mat-card-content>
             <mat-card-actions>
               <button mat-button color="primary" (click)="editItem(item)">EDIT</button>
@@ -149,6 +145,14 @@ import { LocationEditDialogComponent } from '../locations/location-edit-dialog.c
     }
     .file-input button {
       margin-right: 1rem;
+    }
+    @media (max-width: 600px) {
+      .item-list {
+        grid-template-columns: 1fr;
+      }
+      .item-card {
+        width: 100%;
+      }
     }
   `]
 })
@@ -239,34 +243,6 @@ export class ItemsComponent implements OnInit {
     );
   }
 
-  // editItem(item: any): void {
-  //   const dialogRef = this.dialog.open(ItemEditDialogComponent, {
-  //     width: '400px',
-  //     data: { ...item }
-  //   });
-
-  //   dialogRef.afterClosed().subscribe(result => {
-  //     if (result) {
-  //       const updatedItem = { ...result };
-  //       const updatedImage = result.image instanceof File ? result.image : null;
-  //       delete updatedItem.image;
-
-  //       this.apiService.updateItem(item.id, updatedItem, updatedImage).subscribe(
-  //         updatedItem => {
-  //           const index = this.items.findIndex(i => i.id === updatedItem.id);
-  //           if (index !== -1) {
-  //             this.items[index] = updatedItem;
-  //           }
-  //           this.showSnackBar('Item updated successfully');
-  //         },
-  //         error => {
-  //           console.error('Error updating item:', error);
-  //           this.showSnackBar('Error updating item');
-  //         }
-  //       );
-  //     }
-  //   });
-  // }
   editItem(item: any): void {
     const dialogRef = this.dialog.open(ItemEditDialogComponent, {
       width: '400px',
@@ -321,64 +297,6 @@ export class ItemsComponent implements OnInit {
   getLocationName(locationId: number): string {
     const location = this.locations.find(l => l.id === locationId);
     return location ? location.name : 'Unknown Location';
-  }
-
-  editCategory(categoryId: number): void {
-    const category = this.categories.find(c => c.id === categoryId);
-    if (category) {
-      const dialogRef = this.dialog.open(CategoryEditDialogComponent, {
-        width: '400px',
-        data: { ...category }
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this.apiService.updateCategory(categoryId, result).subscribe(
-            updatedCategory => {
-              const index = this.categories.findIndex(c => c.id === updatedCategory.id);
-              if (index !== -1) {
-                this.categories[index] = updatedCategory;
-              }
-              this.showSnackBar('Category updated successfully');
-              this.loadItems(); // Reload items to reflect the updated category
-            },
-            error => {
-              console.error('Error updating category:', error);
-              this.showSnackBar('Error updating category');
-            }
-          );
-        }
-      });
-    }
-  }
-
-  editLocation(locationId: number): void {
-    const location = this.locations.find(l => l.id === locationId);
-    if (location) {
-      const dialogRef = this.dialog.open(LocationEditDialogComponent, {
-        width: '400px',
-        data: { ...location }
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this.apiService.updateLocation(locationId, result).subscribe(
-            updatedLocation => {
-              const index = this.locations.findIndex(l => l.id === updatedLocation.id);
-              if (index !== -1) {
-                this.locations[index] = updatedLocation;
-              }
-              this.showSnackBar('Location updated successfully');
-              this.loadItems(); // Reload items to reflect the updated location
-            },
-            error => {
-              console.error('Error updating location:', error);
-              this.showSnackBar('Error updating location');
-            }
-          );
-        }
-      });
-    }
   }
 
   showSnackBar(message: string): void {
